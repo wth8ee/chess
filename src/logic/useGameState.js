@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { blackPawnRow, blackRow, whitePawnRow, whiteRow } from "../constants";
+import { blackPawnRow, blackRow, figures, whitePawnRow, whiteRow } from "../constants";
 import { getAllDots } from "./getDots/getAllDots";
 import { getKingCoords } from "./getKingCoords";
 import { checkCheck } from "./checkCheck";
 import { checkMate } from "./checkMate";
+import { getIndex } from "./getIndex";
+import { getCoords } from "./getCoords";
 
 export function useGameState() {
     const [dots, setDots] = useState([]);
@@ -21,10 +23,13 @@ export function useGameState() {
     ]);
 
     const handleCellClick = (figure, dotted, index) => {
+        const {x, y} = getCoords(index)
         if (figure) {
             if (dotted && selected.figure.color != figure.color) {
+                //хаваем
                 const newCells = cells.slice();
                 newCells[selected.index] = null;
+                selected.figure.moved = true
                 newCells[index] = selected.figure;
                 setCells(newCells);
                 setSelected(null);
@@ -36,6 +41,7 @@ export function useGameState() {
                 }
                 setWhiteIsNext((l) => !l);
             } else {
+                //переключение на другую фигуру
                 if (
                     (whiteIsNext && figure.color == "white") ||
                     (!whiteIsNext && figure.color == "black")
@@ -43,15 +49,33 @@ export function useGameState() {
                     const tempDots = figure.getDots(index, cells);
                     setDots(tempDots);
                     setSelected({ index: index, figure: figure });
-                } else {
+                }
+                //расфокус
+                else {
                     setSelected(null);
                     setDots([]);
                 }
             }
         } else if (dotted) {
+            //перемещение на пустую клетку
             const newCells = cells.slice();
             newCells[selected.index] = null;
+            selected.figure.moved = true
             newCells[index] = selected.figure;
+
+
+            //проверка на рокировку
+            if (x == 6 && y == 7
+                && getIndex(selected.index) == {x: 4, y: 7}
+                && selected.figure.type == "rook"
+                && selected.figure.color == "white") {
+                console.log('successful r')
+                newCells[getIndex(4, 7)] = null
+                newCells[getIndex(6, 7)] = figures.whiteRook
+            }
+
+            console.log(x == 6 && y == 7)
+
             setCells(newCells);
             setSelected(null);
             setDots([]);
@@ -61,7 +85,9 @@ export function useGameState() {
                 setMate(checkMate(newCells, whiteIsNext));
             }
             setWhiteIsNext((l) => !l);
-        } else {
+        }
+        //расфокус
+        else {
             setDots([]);
             setSelected(null);
         }

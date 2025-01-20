@@ -33,6 +33,7 @@ export const figures = {
         type: "rook",
         color: "white",
         icon: "/src/assets/white-rook.png",
+        moved: false,
         getDots: getRookDots,
     },
     whiteQueen: {
@@ -45,6 +46,7 @@ export const figures = {
         type: "king",
         color: "white",
         icon: "/src/assets/white-king.png",
+        moved: false,
         getDots: getKingDots,
     },
     whiteKnight: {
@@ -72,6 +74,7 @@ export const figures = {
         color: "black",
         icon: "/src/assets/black-rook.png",
         getDots: getRookDots,
+        moved: false,
     },
     blackQueen: {
         type: "queen",
@@ -83,6 +86,7 @@ export const figures = {
         type: "king",
         color: "black",
         icon: "/src/assets/black-king.png",
+        moved: false,
         getDots: getKingDots,
     },
     blackKnight: {
