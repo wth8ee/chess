@@ -1,4 +1,5 @@
 export function getAllDots(cells, color) {
+    console.log('getting dots')
     const allDots = new Set();
     const allDotArrays = [];
     for (let i in cells) {

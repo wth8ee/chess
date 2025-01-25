@@ -20,26 +20,32 @@ export function getKingDots(index, cells) {
         //top-left
          else if (x == 4 && cells[getIndex(x - 4, y)]?.type == "rook"
             && cells[getIndex(x - 4, y)]?.color == "black"
-            && cells[getIndex(x - 4)]?.moved == false
+            && !cells[getIndex(x - 4)]?.moved
             && !moved && !cells[getIndex(x - 1, y)]
             && !cells[getIndex(x - 2, y)]
             && !cells[getIndex(x - 3, y)]) {
-            dots.push({x: x - 4, y: y})
+            dots.push({x: x - 2, y: y})
        }
     }
 
     if (y == 7) {
-        //bottom-left
-        if (x == 4 && cells[getIndex(x + 3, y)].type == "rook"
+        //bottom-right
+        if (x == 4 && cells[getIndex(x + 3, 7)].type == "rook"
             && cells[getIndex(x + 3, y)]?.color == "white"
             && !cells[getIndex(x + 3, y)]?.moved && !moved
             && !cells[getIndex(x + 2, y)]
             && !cells[getIndex(x + 1, y)]) {
             dots.push({x: x + 2, y: y})
         }
-        //bottom-right
-        else if (false) {
-            dots.push({x: x - 4, y:y})
+        
+        //bottom-left
+        else if (x == 4 && cells[getIndex(x - 4, 7)]?.type == "rook"
+            && cells[getIndex(x - 4, 7)]?.color == "white"
+            && cells[getIndex(x - 4, 7)]?.moved == false
+            && !moved && !cells[getIndex(x - 2, 7)]
+            && !cells[getIndex(x - 2, 7)]
+            && !cells[getIndex(x - 3, 7)]) {
+            dots.push({x: x - 2, y: y})
         }
     }
 
@@ -52,6 +58,6 @@ export function getKingDots(index, cells) {
     dots.push({ x: x + 1, y: y });
     dots.push({ x: x - 1, y: y });
 
-    const res = filterDots(dots);
+    const res = filterDots(dots, cells, index);
     return res;
 }

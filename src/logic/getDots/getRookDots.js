@@ -30,6 +30,6 @@ export function getRookDots(index, cells) {
         if (cells[getIndex(x - i, y)]) break;
     }
 
-    const res = filterDots(dots);
+    const res = filterDots(dots, cells, index);
     return res;
 }

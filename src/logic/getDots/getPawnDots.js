@@ -1,3 +1,5 @@
+
+import { checkCheck } from "../checkCheck";
 import { filterDots } from "../filterDots";
 import { getCoords } from "../getCoords";
 import { getIndex } from "../getIndex";
@@ -38,6 +40,6 @@ export function getPawnDots(index, color, cells) {
         }
     }
 
-    const res = filterDots(dots);
+    const res = filterDots(dots, cells, index);
     return res;
 }

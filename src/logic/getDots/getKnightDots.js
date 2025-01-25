@@ -1,7 +1,7 @@
 import { filterDots } from "../filterDots";
 import { getCoords } from "../getCoords";
 
-export function getKnightDots(index) {
+export function getKnightDots(index, cells) {
     const { x, y } = getCoords(index);
     const dots = [];
 
@@ -14,6 +14,6 @@ export function getKnightDots(index) {
     dots.push({ x: x + 1, y: y + 2 });
     dots.push({ x: x + 1, y: y - 2 });
 
-    const res = filterDots(dots);
+    const res = filterDots(dots, cells, index);
     return res;
 }

@@ -31,6 +31,6 @@ export function getBishopDots(index, cells) {
         if (cells[getIndex(x + i, y + i)]) break;
     }
 
-    const res = filterDots(dots);
+    const res = filterDots(dots, cells, index);
     return res;
 }
