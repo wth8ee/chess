@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { blackPawnRow, blackRow, figures, whitePawnRow, whiteRow } from "../constants";
-import { getAllDots } from "./getDots/getAllDots";
-import { getKingCoords } from "./getKingCoords";
+import {
+    blackPawnRow,
+    blackRow,
+    figures,
+    whitePawnRow,
+    whiteRow,
+} from "../constants";
 import { checkCheck } from "./checkCheck";
 import { checkMate } from "./checkMate";
 import { getIndex } from "./getIndex";
 import { getCoords } from "./getCoords";
 import { filterBadDots } from "./filterBadDots";
+import { useNow } from "./useNow";
 
 export function useGameState() {
     const [dots, setDots] = useState([]);
@@ -14,6 +19,15 @@ export function useGameState() {
     const [whiteIsNext, setWhiteIsNext] = useState(true);
     const [check, setCheck] = useState(false);
     const [mate, setMate] = useState(false);
+    const [blackTime, setBlackTime] = useState({
+        startAt: null,
+        timePassed: 0,
+    });
+    const [whiteTime, setWhiteTime] = useState({
+        startAt: null,
+        timePassed: 0,
+    });
+    const [gameRunning, setGameRunning] = useState(false);
 
     const [cells, setCells] = useState([
         ...blackRow,
@@ -23,14 +37,41 @@ export function useGameState() {
         ...whiteRow,
     ]);
 
+    const now = useNow(1000, gameRunning);
+    // if (whiteTime.startAt) {
+    //     setWhiteTime((l) => ({
+    //         timePassed: l.timePassed + now - l.startAt,
+    //         startAt: Date.now(),
+    //     }));
+    // }
+    // if (blackTime.startAt) {
+    //     blackTime.timePassed += now - blackTime.startAt;
+    //     blackTime.startAt = Date.now();
+    //     setBlackTime((l) => ({
+    //         timePassed: l.timePassed + now - l.startAt,
+    //         startAt: Date.now(),
+    //     }));
+    // }
+
+    const handleGameStart = () => {
+        setGameRunning(true);
+        setWhiteTime((l) => ({
+            ...l,
+            startAt: Date.now(),
+        }));
+    };
+
     const handleCellClick = (figure, dotted, index) => {
-        const {x, y} = getCoords(index)
+        if (!gameRunning) {
+            return;
+        }
+        const { x, y } = getCoords(index);
         if (figure) {
             if (dotted && selected.figure.color != figure.color) {
                 //хаваем
                 const newCells = cells.slice();
                 newCells[selected.index] = null;
-                selected.figure.moved = true
+                selected.figure.moved = true;
                 newCells[index] = selected.figure;
                 setCells(newCells);
                 setSelected(null);
@@ -40,6 +81,13 @@ export function useGameState() {
                 if (tempCheck) {
                     setMate(checkMate(newCells, whiteIsNext));
                 }
+                if (whiteIsNext) {
+                    whiteTime.startAt = null;
+                    blackTime.startAt = Date.now();
+                } else {
+                    blackTime.startAt = null;
+                    whiteTime.startAt = Date.now();
+                }
                 setWhiteIsNext((l) => !l);
             } else {
                 //переключение на другую фигуру
@@ -48,7 +96,12 @@ export function useGameState() {
                     (!whiteIsNext && figure.color == "black")
                 ) {
                     const tempDots = figure.getDots(index, cells);
-                    const goodDots = filterBadDots(index, cells, tempDots, whiteIsNext)
+                    const goodDots = filterBadDots(
+                        index,
+                        cells,
+                        tempDots,
+                        whiteIsNext
+                    );
                     setDots(goodDots);
                     setSelected({ index: index, figure: figure });
                 }
@@ -62,52 +115,65 @@ export function useGameState() {
             //перемещение на пустую клетку
             const newCells = cells.slice();
             newCells[selected.index] = null;
-            selected.figure.moved = true
+            selected.figure.moved = true;
             newCells[index] = selected.figure;
 
-
             //проверка на короткую рокировку белых bottom-left
-            if (x == 6 && y == 7
-                && getCoords(selected.index).x == 4 && getCoords(selected.index).y == 7
-                && selected.figure.type == "king"
-                && selected.figure.color == "white") {
-                newCells[getIndex(4, 7)] = null
-                newCells[getIndex(6, 7)] = figures.whiteKing
-                newCells[getIndex(5, 7)] = figures.whiteRook
-                newCells[getIndex(7, 7)] = null
+            if (
+                x == 6 &&
+                y == 7 &&
+                getCoords(selected.index).x == 4 &&
+                getCoords(selected.index).y == 7 &&
+                selected.figure.type == "king" &&
+                selected.figure.color == "white"
+            ) {
+                newCells[getIndex(4, 7)] = null;
+                newCells[getIndex(6, 7)] = figures.whiteKing;
+                newCells[getIndex(5, 7)] = figures.whiteRook;
+                newCells[getIndex(7, 7)] = null;
             }
             //проверка на дальнюю рокировку белых bottom-right
-            if (x == 2 && y == 7
-                && getCoords(selected.index).x == 4 && getCoords(selected.index).y == 7
-                && selected.figure.type == "king"
-                && selected.figure.color == "white") {
-                newCells[getIndex(4, 7)] = null
-                newCells[getIndex(2, 7)] = figures.whiteKing
-                newCells[getIndex(3, 7)] = figures.whiteRook
-                newCells[getIndex(0, 7)] = null
+            if (
+                x == 2 &&
+                y == 7 &&
+                getCoords(selected.index).x == 4 &&
+                getCoords(selected.index).y == 7 &&
+                selected.figure.type == "king" &&
+                selected.figure.color == "white"
+            ) {
+                newCells[getIndex(4, 7)] = null;
+                newCells[getIndex(2, 7)] = figures.whiteKing;
+                newCells[getIndex(3, 7)] = figures.whiteRook;
+                newCells[getIndex(0, 7)] = null;
             }
 
             //проверка на короткую рокировку черных top-right
-            if (x == 6 && y == 0
-                && getCoords(selected.index).x == 4 && getCoords(selected.index).y == 0
-                && selected.figure.type == "king"
-                && selected.figure.color == "black"
+            if (
+                x == 6 &&
+                y == 0 &&
+                getCoords(selected.index).x == 4 &&
+                getCoords(selected.index).y == 0 &&
+                selected.figure.type == "king" &&
+                selected.figure.color == "black"
             ) {
-                newCells[getIndex(4, 0)] = null
-                newCells[getIndex(6, 0)] = figures.blackKing
-                newCells[getIndex(5, 0)] = figures.blackRook
-                newCells[getIndex(7, 0)] = null
+                newCells[getIndex(4, 0)] = null;
+                newCells[getIndex(6, 0)] = figures.blackKing;
+                newCells[getIndex(5, 0)] = figures.blackRook;
+                newCells[getIndex(7, 0)] = null;
             }
             //проверка на длинную рокировку черных top-left
-            if (x == 2 && y == 0
-                && getCoords(selected.index).x == 4 && getCoords(selected.index).y == 0
-                && selected.figure.type == "king"
-                && selected.figure.color == "black"
+            if (
+                x == 2 &&
+                y == 0 &&
+                getCoords(selected.index).x == 4 &&
+                getCoords(selected.index).y == 0 &&
+                selected.figure.type == "king" &&
+                selected.figure.color == "black"
             ) {
-                newCells[getIndex(4, 0)] = null
-                newCells[getIndex(2, 0)] = figures.blackKing
-                newCells[getIndex(3, 0)] = figures.blackRook
-                newCells[getIndex(0, 0)] = null
+                newCells[getIndex(4, 0)] = null;
+                newCells[getIndex(2, 0)] = figures.blackKing;
+                newCells[getIndex(3, 0)] = figures.blackRook;
+                newCells[getIndex(0, 0)] = null;
             }
 
             setCells(newCells);
@@ -134,5 +200,10 @@ export function useGameState() {
         handleCellClick,
         check,
         mate,
+        whiteTime,
+        blackTime,
+        whiteIsNext,
+        gameRunning,
+        handleGameStart,
     };
 }
